@@ -10,6 +10,7 @@ function App() {
   const [selectedPackage, setSelectedPackage] = useState('standard');
   const [sellerDashTab, setSellerDashTab] = useState('Dashboard');
   const [buyerDashTab, setBuyerDashTab] = useState('Dashboard');
+  const [activeInboxThread, setActiveInboxThread] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [notification, setNotification] = useState('');
 
@@ -20,73 +21,6 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="view-nav-bar">
-        <span className="view-title">Marketplace View Switcher:</span>
-        <div className="view-buttons">
-          <button
-            type="button"
-            className={`view-btn ${activePage === 'home' ? 'active' : ''}`}
-            onClick={() => setActivePage('home')}
-          >
-            Home Page
-          </button>
-          <button
-            type="button"
-            className={`view-btn ${activePage === 'listing' ? 'active' : ''}`}
-            onClick={() => setActivePage('listing')}
-          >
-            Service Listing
-          </button>
-          <button
-            type="button"
-            className={`view-btn ${activePage === 'detail' ? 'active' : ''}`}
-            onClick={() => setActivePage('detail')}
-          >
-            Service Detail
-          </button>
-          <button
-            type="button"
-            className={`view-btn ${activePage === 'seller-dash' ? 'active' : ''}`}
-            onClick={() => setActivePage('seller-dash')}
-          >
-            Seller Dashboard
-          </button>
-          <button
-            type="button"
-            className={`view-btn ${activePage === 'buyer-dash' ? 'active' : ''}`}
-            onClick={() => setActivePage('buyer-dash')}
-          >
-            Buyer Dashboard
-          </button>
-          <button
-            type="button"
-            className={`view-btn ${activePage === 'create-service' ? 'active' : ''}`}
-            onClick={() => setActivePage('create-service')}
-          >
-            Create Service
-          </button>
-          <button
-            type="button"
-            className={`view-btn ${activePage === 'auth' && authMode === 'signin' ? 'active' : ''}`}
-            onClick={() => {
-              setAuthMode('signin');
-              setActivePage('auth');
-            }}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            className={`view-btn ${activePage === 'auth' && authMode === 'signup' ? 'active' : ''}`}
-            onClick={() => {
-              setAuthMode('signup');
-              setActivePage('auth');
-            }}
-          >
-            Sign Up
-          </button>
-        </div>
-      </div>
 
       {notification && (
         <div
@@ -134,26 +68,12 @@ function App() {
             <button
               type="button"
               className={`nav-link ${activePage === 'listing' ? 'active' : ''}`}
-              onClick={() => setActivePage('listing')}
-            >
-              Explore
-            </button>
-            <button
-              type="button"
-              className={`nav-link ${activePage === 'listing' ? 'active' : ''}`}
               onClick={() => {
                 setActivePage('listing');
                 setSelectedCategory('All');
               }}
             >
-              Categories
-            </button>
-            <button
-              type="button"
-              className="nav-link seller-cta-nav"
-              onClick={() => setActivePage('seller-dash')}
-            >
-              Become a Seller
+              Explore
             </button>
             <button
               type="button"
@@ -178,6 +98,15 @@ function App() {
 
             {currentUser ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {currentUser.role !== 'provider' && (
+                  <button
+                    type="button"
+                    className="nav-link seller-cta-nav"
+                    onClick={() => setActivePage('seller-dash')}
+                  >
+                    Become a Seller
+                  </button>
+                )}
                 <button
                   type="button"
                   className="profile-avatar-btn"
@@ -218,6 +147,13 @@ function App() {
                   }}
                 >
                   Sign In
+                </button>
+                <button
+                  type="button"
+                  className="nav-link seller-cta-nav"
+                  onClick={() => setActivePage('seller-dash')}
+                >
+                  Become a Seller
                 </button>
                 <button
                   type="button"
@@ -1017,115 +953,273 @@ function App() {
 
             <div className="dashboard-main">
               <div className="dash-header-row">
-                <h1 className="page-title">Buyer Dashboard</h1>
+                <h1 className="page-title">
+                  {buyerDashTab === 'Messages' ? 'Inbox' : 'Buyer Dashboard'}
+                </h1>
               </div>
 
-              <div className="content-block">
-                <h2 className="block-title">Active Orders</h2>
-                <div className="progress-card">
-                  <div className="progress-header">
-                    <span>Service: <strong>Video Editing</strong></span>
-                    <span>Price: <strong>$80</strong> (Progress: 60%)</span>
-                  </div>
-                  <div className="progress-bar-bg">
-                    <div className="progress-bar-fill" style={{ width: '60%' }}></div>
-                  </div>
-                </div>
-
-                <div className="progress-card" style={{ marginBottom: 0 }}>
-                  <div className="progress-header">
-                    <span>Service: <strong>Website Development</strong></span>
-                    <span>Price: <strong>$250</strong> (Progress: 25%)</span>
-                  </div>
-                  <div className="progress-bar-bg">
-                    <div className="progress-bar-fill" style={{ width: '25%' }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="content-block">
-                <h2 className="block-title">Messages</h2>
-                <div className="reviews-list">
-                  <div className="review-item">
-                    <div className="reviewer-header">
-                      <div className="mini-avatar">JS</div>
-                      <span className="reviewer-name">John Studio</span>
+              {/* ── MESSAGES / INBOX TAB ─────────────────────────────── */}
+              {buyerDashTab === 'Messages' && (() => {
+                const threads = [
+                  {
+                    id: 0,
+                    name: 'John Studio',
+                    initials: 'JS',
+                    color: '#7c3aed',
+                    service: 'Video Editing – 4K Cinematic',
+                    preview: 'Hi! I have uploaded the first cut of your 4K video.',
+                    time: '2m ago',
+                    unread: 2,
+                    messages: [
+                      { from: 'them', text: 'Hey! Just wanted to confirm the order details before I start.', ts: '10:02 AM' },
+                      { from: 'me',   text: 'Sure! I need a 2-minute highlight reel from the raw footage.', ts: '10:08 AM' },
+                      { from: 'them', text: 'Got it. Any specific colour grade style — warm, cool, or natural?', ts: '10:11 AM' },
+                      { from: 'me',   text: 'Warm and cinematic please. Think golden hour vibes.', ts: '10:14 AM' },
+                      { from: 'them', text: 'Perfect. I will have a rough cut ready within 48 hours.', ts: '11:30 AM' },
+                      { from: 'them', text: 'Hi! I have uploaded the first cut of your 4K video. Let me know what you think!', ts: '2:15 PM' },
+                    ],
+                  },
+                  {
+                    id: 1,
+                    name: 'Sarah Tech',
+                    initials: 'ST',
+                    color: '#10b981',
+                    service: 'Website Development – Full Stack',
+                    preview: 'I have deployed the staging database for your site.',
+                    time: '1h ago',
+                    unread: 1,
+                    messages: [
+                      { from: 'me',   text: 'Hi Sarah, can you share the project timeline?', ts: 'Yesterday' },
+                      { from: 'them', text: 'Of course! Frontend – 3 days, backend – 5 days, testing – 2 days.', ts: 'Yesterday' },
+                      { from: 'me',   text: 'Sounds good. Please keep the backend on Node.js and PostgreSQL.', ts: 'Yesterday' },
+                      { from: 'them', text: 'Absolutely, that is my default stack. I have deployed the staging database for your website testing.', ts: '9:45 AM' },
+                    ],
+                  },
+                  {
+                    id: 2,
+                    name: 'Priya Design',
+                    initials: 'PD',
+                    color: '#f59e0b',
+                    service: 'Logo Design – Brand Identity',
+                    preview: 'Here are the 3 initial concept drafts for review.',
+                    time: '3h ago',
+                    unread: 0,
+                    messages: [
+                      { from: 'me',   text: 'Hi Priya! We are looking for something modern and minimal.', ts: 'Mon' },
+                      { from: 'them', text: 'Got it! What colours does your brand use?', ts: 'Mon' },
+                      { from: 'me',   text: 'Deep indigo, white, and a touch of violet.', ts: 'Mon' },
+                      { from: 'them', text: 'Love that palette. Here are the 3 initial concept drafts for review.', ts: 'Today' },
+                    ],
+                  },
+                ];
+                const thread = threads[activeInboxThread];
+                return (
+                  <div className="inbox-layout">
+                    {/* Thread list */}
+                    <div className="inbox-sidebar">
+                      <div className="inbox-search-wrap">
+                        <input
+                          type="text"
+                          className="inbox-search"
+                          placeholder="🔍  Search messages…"
+                        />
+                      </div>
+                      {threads.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          className={`inbox-thread-item ${activeInboxThread === t.id ? 'active' : ''}`}
+                          onClick={() => setActiveInboxThread(t.id)}
+                        >
+                          <div
+                            className="inbox-avatar"
+                            style={{ background: t.color }}
+                          >
+                            {t.initials}
+                          </div>
+                          <div className="inbox-thread-meta">
+                            <div className="inbox-thread-top">
+                              <span className="inbox-thread-name">{t.name}</span>
+                              <span className="inbox-thread-time">{t.time}</span>
+                            </div>
+                            <div className="inbox-thread-service">{t.service}</div>
+                            <div className="inbox-thread-preview">{t.preview}</div>
+                          </div>
+                          {t.unread > 0 && (
+                            <span className="inbox-unread-badge">{t.unread}</span>
+                          )}
+                        </button>
+                      ))}
                     </div>
-                    <p className="block-text">
-                      "Hi! I have uploaded the first cut of your 4K video. Let me know what you think!"
-                    </p>
-                  </div>
-                  <div className="review-item">
-                    <div className="reviewer-header">
-                      <div className="mini-avatar" style={{ background: '#10b981' }}>ST</div>
-                      <span className="reviewer-name">Sarah Tech</span>
-                    </div>
-                    <p className="block-text">
-                      "I have deployed the staging database for your website testing."
-                    </p>
-                  </div>
-                </div>
-              </div>
 
-              <div className="content-block">
-                <h2 className="block-title">Saved Services</h2>
-                <div className="services-grid" style={{ marginBottom: 0 }}>
-                  <div className="service-card" onClick={() => setActivePage('detail')}>
-                    <div className="service-card-body">
-                      <h3 className="service-card-title">I will create a cinematic 4K video for you</h3>
-                      <div className="service-card-footer">
-                        <span className="price-label">Starting at</span>
-                        <span className="price-amount">$60</span>
+                    {/* Chat pane */}
+                    <div className="inbox-chat">
+                      <div className="inbox-chat-header">
+                        <div
+                          className="inbox-avatar"
+                          style={{ background: thread.color, width: '38px', height: '38px', fontSize: '0.85rem' }}
+                        >
+                          {thread.initials}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 700 }}>{thread.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{thread.service}</div>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ marginLeft: 'auto', fontSize: '0.78rem', padding: '6px 14px' }}
+                          onClick={() => triggerNotice('Order page opened')}
+                        >
+                          View Order
+                        </button>
+                      </div>
+
+                      <div className="inbox-messages">
+                        {thread.messages.map((msg, i) => (
+                          <div
+                            key={i}
+                            className={`inbox-bubble-row ${msg.from === 'me' ? 'mine' : 'theirs'}`}
+                          >
+                            {msg.from === 'them' && (
+                              <div
+                                className="inbox-avatar"
+                                style={{
+                                  background: thread.color,
+                                  width: '30px',
+                                  height: '30px',
+                                  fontSize: '0.7rem',
+                                  flexShrink: 0,
+                                  alignSelf: 'flex-end',
+                                }}
+                              >
+                                {thread.initials}
+                              </div>
+                            )}
+                            <div className="inbox-bubble-wrap">
+                              <div className={`inbox-bubble ${msg.from === 'me' ? 'bubble-mine' : 'bubble-theirs'}`}>
+                                {msg.text}
+                              </div>
+                              <span className="inbox-bubble-ts">{msg.ts}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="inbox-composer">
+                        <input
+                          type="text"
+                          className="inbox-input"
+                          placeholder="Type a message…"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.target.value.trim()) {
+                              triggerNotice('Message sent!');
+                              e.target.value = '';
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          style={{ padding: '10px 20px', borderRadius: '12px' }}
+                          onClick={(e) => {
+                            const input = e.currentTarget.previousSibling;
+                            if (input.value.trim()) {
+                              triggerNotice('Message sent!');
+                              input.value = '';
+                            }
+                          }}
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── ALL OTHER TABS ────────────────────────────────────── */}
+              {buyerDashTab !== 'Messages' && (
+                <>
+                  <div className="content-block">
+                    <h2 className="block-title">Active Orders</h2>
+                    <div className="progress-card">
+                      <div className="progress-header">
+                        <span>Service: <strong>Video Editing</strong></span>
+                        <span>Price: <strong>$80</strong> (Progress: 60%)</span>
+                      </div>
+                      <div className="progress-bar-bg">
+                        <div className="progress-bar-fill" style={{ width: '60%' }}></div>
+                      </div>
+                    </div>
+
+                    <div className="progress-card" style={{ marginBottom: 0 }}>
+                      <div className="progress-header">
+                        <span>Service: <strong>Website Development</strong></span>
+                        <span>Price: <strong>$250</strong> (Progress: 25%)</span>
+                      </div>
+                      <div className="progress-bar-bg">
+                        <div className="progress-bar-fill" style={{ width: '25%' }}></div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="service-card" onClick={() => setActivePage('detail')}>
-                    <div className="service-card-body">
-                      <h3 className="service-card-title">I will build responsive web applications in React</h3>
-                      <div className="service-card-footer">
-                        <span className="price-label">Starting at</span>
-                        <span className="price-amount">$150</span>
+                  <div className="content-block">
+                    <h2 className="block-title">Saved Services</h2>
+                    <div className="services-grid" style={{ marginBottom: 0 }}>
+                      <div className="service-card" onClick={() => setActivePage('detail')}>
+                        <div className="service-card-body">
+                          <h3 className="service-card-title">I will create a cinematic 4K video for you</h3>
+                          <div className="service-card-footer">
+                            <span className="price-label">Starting at</span>
+                            <span className="price-amount">$60</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="service-card" onClick={() => setActivePage('detail')}>
+                        <div className="service-card-body">
+                          <h3 className="service-card-title">I will build responsive web applications in React</h3>
+                          <div className="service-card-footer">
+                            <span className="price-label">Starting at</span>
+                            <span className="price-amount">$150</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="table-container">
-                <div className="table-header">Order History</div>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Service</th>
-                      <th>Seller</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>#ORD-7812</td>
-                      <td>Logo Design</td>
-                      <td>Priya</td>
-                      <td>$40</td>
-                      <td>
-                        <span className="badge-status badge-delivered">Completed</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#ORD-6541</td>
-                      <td>SEO Consultation</td>
-                      <td>Mark Words</td>
-                      <td>$35</td>
-                      <td>
-                        <span className="badge-status badge-delivered">Completed</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                  <div className="table-container">
+                    <div className="table-header">Order History</div>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Order ID</th>
+                          <th>Service</th>
+                          <th>Seller</th>
+                          <th>Amount</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>#ORD-7812</td>
+                          <td>Logo Design</td>
+                          <td>Priya</td>
+                          <td>$40</td>
+                          <td><span className="badge-status badge-delivered">Completed</span></td>
+                        </tr>
+                        <tr>
+                          <td>#ORD-6541</td>
+                          <td>SEO Consultation</td>
+                          <td>Mark Words</td>
+                          <td>$35</td>
+                          <td><span className="badge-status badge-delivered">Completed</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
